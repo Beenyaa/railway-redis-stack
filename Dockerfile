@@ -1,4 +1,4 @@
-FROM docker.io/bitnami/minideb:bullseye as builder
+FROM docker.io/bitnami/minideb:bullseye AS builder
 ENV HOME="/" \
     OS_ARCH="amd64" \
     OS_FLAVOUR="debian-11" \
