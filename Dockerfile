@@ -31,7 +31,7 @@ WORKDIR /data
 ENV LIBDIR /usr/lib/redis/modules/
 RUN mkdir -p "$LIBDIR";
 
-COPY --from=builder /build/build/redisearch.so*       "$LIBDIR"
+COPY /build/build/redisearch.so*       "$LIBDIR"
 COPY --from=json    /usr/lib/redis/modules/rejson.so* "$LIBDIR"
 
 EXPOSE 6379
