@@ -3,7 +3,7 @@
 ARG REDIS_VER=6.2.4
 ARG OSNICK=bullseye
 ARG OS=debian:bullseye-slim
-ARG ARCH=amd64 # change from x64 to amd64
+ARG ARCH=x64
 ARG GIT_DESCRIBE_VERSION
 
 FROM redisfab/redis:${REDIS_VER}-${ARCH}-${OSNICK} AS redis
