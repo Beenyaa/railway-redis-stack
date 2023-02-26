@@ -1,7 +1,7 @@
 # BUILD redisfab/redisearch:${VERSION}-${ARCH}-${OSNICK}
 
 # Use a more specific base image
-FROM docker.io/bitnami/minideb:bullseye-20220920 AS base
+FROM docker.io/bitnami/minideb:bullseye AS base
 
 # Set build arguments
 ARG REDIS_VER=6.2.4
@@ -33,7 +33,7 @@ RUN cd /build && \
 
 # Install RedisSearch and RedisJSON modules
 FROM redisfab/rejson:master-${ARCH}-bullseye AS json
-FROM redisfab/redis:${REDIS_VER}-${ARCH}-bullseye-slim AS redis
+# FROM redisfab/redis:${REDIS_VER}-${ARCH}-bullseye-slim AS redis
 
 ENV LIBDIR /usr/lib/redis/modules/
 RUN mkdir -p "$LIBDIR"
