@@ -24,7 +24,7 @@ ENV APP_VERSION="7.0.4" \
     PATH="/opt/bitnami/common/bin:/opt/bitnami/redis/bin:$PATH"
     
 FROM redisfab/rejson:master-x64-bullseye AS json
-FROM redisfab/redis:master-x64-bullseye
+FROM redisfab/redis:6.0-latest-x64-bullseye
 
 WORKDIR /data
 
