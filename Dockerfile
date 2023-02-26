@@ -1,55 +1,65 @@
 # BUILD redisfab/redisearch:${VERSION}-${ARCH}-${OSNICK}
 
-# Use a more specific base image
-FROM docker.io/bitnami/minideb:bullseye AS base
-
-# Set build arguments
 ARG REDIS_VER=6.2.4
+
+# OSNICK=bullseye|centos7|centos8|xenial|bionic
+ARG OSNICK=bullseye
+
+# OS=debian:bullseye-slim|centos:7|centos:8|ubuntu:xenial|ubuntu:bionic
+ARG OS=debian:bullseye-slim
+
+# ARCH=x64|arm64v8|arm32v7
 ARG ARCH=x64
+
 ARG GIT_DESCRIBE_VERSION
 
-# Install required system packages and dependencies
-RUN install_packages acl ca-certificates curl gzip libc6 libssl1.1 procps tar && \
-    apt-get update && apt-get upgrade -y && \
-    rm -r /var/lib/apt/lists /var/cache/apt/archives
+#----------------------------------------------------------------------------------------------
+FROM redisfab/redis:${REDIS_VER}-${ARCH}-${OSNICK} AS redis
+FROM ${OS} AS builder
 
-# Copy source code and scripts
-COPY . /build
-COPY prebuildfs /build/prebuildfs
-COPY rootfs /build/rootfs
+ARG OSNICK
+ARG OS
+ARG ARCH
+ARG REDIS_VER
+ARG GIT_DESCRIBE_VERSION
 
-# Copy Redis binaries from another image
-COPY --from=redisfab/redis:${REDIS_VER}-${ARCH}-bullseye-slim /usr/local/ /usr/local/
+RUN echo "Building for ${OSNICK} (${OS}) for ${ARCH}"
 
-# Build RedisSearch and dependencies
-RUN cd /build && \
-    ./deps/readies/bin/getupdates && \
-    ./deps/readies/bin/getpy2 && \
-    ./system-setup.py && \
-    /usr/local/bin/redis-server --version && \
-    make fetch SHOW=1 && \
-    make build SHOW=1 CMAKE_ARGS="-DGIT_DESCRIBE_VERSION=${GIT_DESCRIBE_VERSION}" && \
-    ./deps/readies/bin/verify-python
+WORKDIR /build
+COPY --from=redis /usr/local/ /usr/local/
 
-# Install RedisSearch and RedisJSON modules
-FROM redisfab/rejson:master-${ARCH}-bullseye AS json
-# FROM redisfab/redis:${REDIS_VER}-${ARCH}-bullseye-slim AS redis
+ADD . /build
+
+RUN ./deps/readies/bin/getupdates
+RUN ./deps/readies/bin/getpy2
+RUN ./system-setup.py
+
+RUN /usr/local/bin/redis-server --version
+RUN make fetch SHOW=1
+RUN make build SHOW=1 CMAKE_ARGS="-DGIT_DESCRIBE_VERSION=${GIT_DESCRIBE_VERSION}"
+
+# ARG PACK=0
+ARG TEST=0
+
+# RUN if [ "$PACK" = "1" ]; then make pack; fi
+RUN if [ "$TEST" = "1" ]; then TEST= make test; fi
+
+#----------------------------------------------------------------------------------------------
+FROM redisfab/rejson:master-${ARCH}-${OSNICK} AS json
+FROM redisfab/redis:${REDIS_VER}-${ARCH}-${OSNICK}
+
+ARG OSNICK
+ARG OS
+ARG ARCH
+ARG REDIS_VER
+# ARG PACK
+
+WORKDIR /data
 
 ENV LIBDIR /usr/lib/redis/modules/
-RUN mkdir -p "$LIBDIR"
+RUN mkdir -p "$LIBDIR";
 
-COPY --from=builder /build/build/redisearch.so* "$LIBDIR"
-COPY --from=json /usr/lib/redis/modules/rejson.so* "$LIBDIR"
+COPY --from=builder /build/build/redisearch.so*       "$LIBDIR"
+COPY --from=json    /usr/lib/redis/modules/rejson.so* "$LIBDIR"
 
-# Set container metadata
-ENV BITNAMI_APP_NAME="redisearch" \
-    BITNAMI_IMAGE_VERSION="${REDIS_VER}" \
-    PATH="/opt/bitnami/common/bin:/opt/bitnami/redis/bin:$PATH"
-
-EXPOSE 6379
-
-USER 1001
-
-# Set entrypoint and default command
-ENTRYPOINT [ "/opt/bitnami/scripts/redis/entrypoint.sh" ]
-CMD [ "/opt/bitnami/scripts/redis/run.sh" ]
+CMD ["redis-server", "--loadmodule", "/usr/lib/redis/modules/redisearch.so", "--loadmodule", "/usr/lib/redis/modules/rejson.so"]
