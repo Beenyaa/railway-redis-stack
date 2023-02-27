@@ -9,7 +9,7 @@ RUN /bin/sh -c mkdir -p /data/redis /data/redisinsight # buildkit
 RUN /bin/sh -c touch /.dockerenv # buildkit
 RUN /bin/sh -c dpkg -i /var/cache/apt/redis-stack/redis-stack-server*.deb # buildkit
 RUN /bin/sh -c rm -rf /var/cache/apt # buildkit
-COPY ./etc/scripts/entrypoint.sh /entrypoint.sh # buildkit
+COPY ./entrypoint.sh /entrypoint.sh # buildkit
 RUN /bin/sh -c chmod a+x /entrypoint.sh # buildkit
 EXPOSE 6379
 ENV REDISBLOOM_ARGS=
