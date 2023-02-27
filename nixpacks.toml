@@ -1,5 +1,5 @@
 buildImage='docker.io/redis/redis-stack-server:latest'
 [phases.build]
-cmds = ['docker run -d --name redis-stack-server -p $REDISPORT:6379 redis/redis-stack-server:latest']
+cmds = ['echo build start!', '...', 'echo build finished!']
 [start]
 cmds = ["docker run -d --name redis-stack-server -p $REDISPORT:6379 redis/redis-stack-server:latest"]
