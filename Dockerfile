@@ -1,8 +1,9 @@
+FROM ubuntu:focal
 ARG RELEASE
 ARG LAUNCHPAD_BUILD_ARCH
 LABEL org.opencontainers.image.ref.name=ubuntu
 LABEL org.opencontainers.image.version=20.04
-ADD file:8b180a9b4497de0c6e131d6b48cf5c69a885379e63033ab9639d1655991e626c in / 
+
 CMD ["/bin/bash"]
 RUN /bin/sh -c apt-get update -qqy # buildkit
 RUN /bin/sh -c apt-get upgrade -qqy # buildkit
