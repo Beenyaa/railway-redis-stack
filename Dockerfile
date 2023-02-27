@@ -16,7 +16,7 @@ RUN /bin/sh -c dpkg -i /var/cache/apt/redis-stack/redis-stack-server*.deb # buil
 RUN /bin/sh -c rm -rf /var/cache/apt # buildkit
 COPY ./etc/scripts/entrypoint.sh /entrypoint.sh # buildkit
 RUN /bin/sh -c chmod a+x /entrypoint.sh # buildkit
-EXPOSE map[6379/tcp:{}]
+EXPOSE 6379
 ENV REDISBLOOM_ARGS=
 ENV REDISEARCH_ARGS=
 ENV REDISJSON_ARGS=
